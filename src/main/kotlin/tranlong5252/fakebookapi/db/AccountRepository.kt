@@ -1,8 +1,14 @@
-package com.test.dao
+package tranlong5252.fakebookapi.db
 
+import org.springframework.data.domain.Example
 import org.springframework.data.jpa.repository.JpaRepository
-import tranlong5252.fakebookapi.db.entities.Account
+import org.springframework.transaction.annotation.Transactional
+import tranlong5252.fakebookapi.model.Account
 
-interface Repository : {
+@Transactional(readOnly = true)
+interface AccountRepository : JpaRepository<Account, String> {
 
+    fun getAccountByUsername(username: String): Account {
+        return this.findAll().map { it }.first { it.username == username }
+    }
 }

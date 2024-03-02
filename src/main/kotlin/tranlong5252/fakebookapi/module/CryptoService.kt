@@ -1,4 +1,4 @@
-package tranlong5252.fakebookapi.service
+package tranlong5252.fakebookapi.module
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
@@ -79,11 +79,12 @@ class CryptoService {
         return claims
     }
 
-    fun verifyJwt(token: String) : Boolean {
+    fun verifyJwt(token: String) : String {
         val jwt = JWT.require(Algorithm.HMAC256(jwtSecret))
             .withIssuer(jwtIssuer)
             .build()
         val decoded = jwt.verify(token)
-        return decoded.subject != null
+        println(decoded.subject)
+        return decoded.subject
     }
 }

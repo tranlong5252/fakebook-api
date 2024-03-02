@@ -1,4 +1,4 @@
-package tranlong5252.fakebookapi.db.entities
+package tranlong5252.fakebookapi.model
 
 import jakarta.persistence.*
 
@@ -9,9 +9,9 @@ import jakarta.persistence.*
 class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    var id: String? = null
+    var id: String = ""
     @Column(nullable = false, name = "username")
-    var username: String? = null
+    var username: String = ""
     @Column(nullable = false, name = "password")
-    var password: String? = null
+    var password: String = ""
 }

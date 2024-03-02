@@ -1,4 +1,4 @@
-package tranlong5252.fakebookapi.errors
+package tranlong5252.fakebookapi.exception
 
 class ValidationError : Exception() {
     override val message: String = "Validation error"

@@ -1,4 +1,4 @@
 package tranlong5252.fakebookapi.exception
 
-class UnauthorizedException {
+class UnauthorizedException(s: String) : RuntimeException() {
 }
