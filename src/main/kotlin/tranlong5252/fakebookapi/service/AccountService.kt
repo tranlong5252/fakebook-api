@@ -1,9 +1,9 @@
 package tranlong5252.fakebookapi.service
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.Example
 import org.springframework.stereotype.Service
 import tranlong5252.fakebookapi.db.AccountRepository
+import tranlong5252.fakebookapi.dto.accounts.AccountResponseDto
 import tranlong5252.fakebookapi.dto.accounts.CreateAccountDto
 import tranlong5252.fakebookapi.exception.NotFoundException
 import tranlong5252.fakebookapi.exception.ValidationError
@@ -20,9 +20,9 @@ class AccountService {
     @Autowired
     private lateinit var repository: AccountRepository
 
-    fun createAccount(dto: CreateAccountDto) : Map<String, String?> {
+    fun createAccount(dto: CreateAccountDto) : AccountResponseDto {
         val errors = mutableListOf<ValidationError>()
-
+        val response = AccountResponseDto()
         print(dto.username)
         print(dto.password)
 
@@ -47,7 +47,10 @@ class AccountService {
             this.password = cryptoService
                 .crypto(dto.password)
         })
-        return mapOf("id" to account.id, "username" to account.username)
+        return response.apply {
+            this.id = account.id
+            this.username = account.username
+        }
     }
 
     fun getAccountById(id: String): Account {
