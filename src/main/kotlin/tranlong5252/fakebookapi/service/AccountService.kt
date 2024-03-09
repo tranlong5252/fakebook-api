@@ -1,13 +1,21 @@
 package tranlong5252.fakebookapi.service
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
+import com.google.api.client.http.javanet.NetHttpTransport
+import com.google.api.client.json.gson.GsonFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import tranlong5252.fakebookapi.db.AccountRepository
+import tranlong5252.fakebookapi.dto.accounts.AccountDetailDto
 import tranlong5252.fakebookapi.dto.accounts.AccountResponseDto
 import tranlong5252.fakebookapi.dto.accounts.CreateAccountDto
+import tranlong5252.fakebookapi.dto.auth.AccountLoginResponseDto
 import tranlong5252.fakebookapi.exception.NotFoundException
+import tranlong5252.fakebookapi.exception.UnauthorizedException
 import tranlong5252.fakebookapi.exception.ValidationError
 import tranlong5252.fakebookapi.model.Account
+import tranlong5252.fakebookapi.model.AccountDetail
 import tranlong5252.fakebookapi.module.CryptoService
 import java.util.*
 
@@ -18,7 +26,7 @@ class AccountService {
     lateinit var cryptoService: CryptoService
 
     @Autowired
-    private lateinit var repository: AccountRepository
+    lateinit var repository: AccountRepository
 
     fun createAccount(dto: CreateAccountDto) : AccountResponseDto {
         val errors = mutableListOf<ValidationError>()
@@ -46,23 +54,30 @@ class AccountService {
             this.username = dto.username
             this.password = cryptoService
                 .crypto(dto.password)
+            this.detail = AccountDetail().apply {
+                this.email = dto.detail!!.email
+                this.fname = dto.detail!!.fname
+                this.lname = dto.detail!!.lname
+                this.age = dto.detail!!.age
+            }
         })
         return response.apply {
             this.id = account.id
             this.username = account.username
+            this.detail = AccountDetailDto().apply {
+                this.email = account.detail!!.email
+                this.fname = account.detail!!.fname
+                this.lname = account.detail!!.lname
+                this.age = account.detail!!.age
+            }
         }
     }
 
     fun getAccountById(id: String): Account {
-        val account = this.repository.findById(id)
-        if (account.isEmpty) {
-            throw NotFoundException("Account not found")
-        }
-        return account.get()
+        return  this.repository.findById(id).get() ?: throw NotFoundException("Account not found")
     }
 
     fun getAccountByUsername(username: String): Account {
-        val account = this.repository.getAccountByUsername(username)
-        return account
+        return this.repository.getAccountByUsername(username) ?: throw NotFoundException("Account not found")
     }
 }

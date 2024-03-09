@@ -31,5 +31,13 @@ internal class AuthController {
         val response = authService.verifyAccessToken(userAgent)
         return ResponseEntity.ok().body(response)
     }
+
+    @GetMapping("/login-with-google")
+    fun loginWithGoogle(@RequestParam credential: String): ResponseEntity<AccountLoginResponseDto> {
+        val response = authService.loginWithGoogle(credential)
+        val headers = HttpHeaders()
+        headers.add("content-type", "application/json")
+        return ResponseEntity.ok().headers(headers).body(response)
+    }
 }
 

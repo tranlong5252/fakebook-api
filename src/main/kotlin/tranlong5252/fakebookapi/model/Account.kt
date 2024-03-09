@@ -9,9 +9,15 @@ import jakarta.persistence.*
 class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(nullable = false, name = "id")
     var id: String = ""
     @Column(nullable = false, name = "username")
     var username: String = ""
     @Column(nullable = false, name = "password")
     var password: String = ""
+    @Column(nullable = false, name = "email")
+    var email: String? = ""
+    @JoinColumn(nullable = true, name = "detail")
+    @OneToOne(cascade = [CascadeType.ALL], orphanRemoval = true)
+    var detail: AccountDetail? = null
 }

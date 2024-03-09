@@ -8,7 +8,11 @@ import tranlong5252.fakebookapi.model.Account
 @Transactional(readOnly = true)
 interface AccountRepository : JpaRepository<Account, String> {
 
-    fun getAccountByUsername(username: String): Account {
+    fun getAccountByUsername(username: String): Account? {
         return this.findAll().map { it }.first { it.username == username }
+    }
+
+    fun findByEmail(email: String?): Account? {
+        return this.findAll().map { it }.first { it.email == email }
     }
 }
