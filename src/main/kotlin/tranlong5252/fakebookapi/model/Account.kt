@@ -1,6 +1,7 @@
 package tranlong5252.fakebookapi.model
 
 import jakarta.persistence.*
+import tranlong5252.fakebookapi.utils.enums.AccountRoleEnum
 
 @Entity
 @Table(name = "accounts", uniqueConstraints = [
@@ -20,4 +21,7 @@ class Account {
     @JoinColumn(nullable = true, name = "detail")
     @OneToOne(cascade = [CascadeType.ALL], orphanRemoval = true)
     var detail: AccountDetail? = null
+
+    @Column(nullable = false, name = "role")
+    var role: AccountRoleEnum = AccountRoleEnum.USER
 }

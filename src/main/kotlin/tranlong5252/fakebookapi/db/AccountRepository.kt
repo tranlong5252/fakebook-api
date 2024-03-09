@@ -1,6 +1,5 @@
 package tranlong5252.fakebookapi.db
 
-import org.springframework.data.domain.Example
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.transaction.annotation.Transactional
 import tranlong5252.fakebookapi.model.Account

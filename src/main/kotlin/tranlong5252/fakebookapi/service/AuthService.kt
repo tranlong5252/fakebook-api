@@ -11,10 +11,12 @@ import tranlong5252.fakebookapi.dto.accounts.AccountDetailDto
 import tranlong5252.fakebookapi.dto.accounts.AccountResponseDto
 import tranlong5252.fakebookapi.dto.auth.AccountLoginResponseDto
 import tranlong5252.fakebookapi.dto.auth.LoginWithUsernameAndPasswordDto
-import tranlong5252.fakebookapi.exception.UnauthorizedException
+import tranlong5252.fakebookapi.exception.FakebookException
+import tranlong5252.fakebookapi.exception.errors.LoginErrorReport
 import tranlong5252.fakebookapi.model.Account
 import tranlong5252.fakebookapi.model.AccountDetail
 import tranlong5252.fakebookapi.module.CryptoService
+import tranlong5252.fakebookapi.security.JwtProvider
 import java.util.*
 
 @Service
@@ -23,23 +25,37 @@ class AuthService {
     lateinit var cryptoService: CryptoService
 
     @Autowired
+    private lateinit var jwtProvider: JwtProvider
+
+    @Autowired
     private lateinit var accountService: AccountService
 
     fun loginWithUsernameAndPassword(dto: LoginWithUsernameAndPasswordDto): AccountLoginResponseDto {
-        val account = accountService.getAccountByUsername(dto.username)
+        val account = accountService.getAccountByUsername(dto.username)?: throw FakebookException(
+            LoginErrorReport(
+                "Account not found", mapOf(
+                    "username" to dto.username
+                )
+            )
+        )
         if (!cryptoService.verify(dto.password, account.password)) {
-            throw UnauthorizedException("Incorrect password!")
+            throw FakebookException(
+                LoginErrorReport(
+                    "Invalid username or password", mapOf(
+                        "username" to dto.username,
+                        "password" to dto.password
+                    )
+                )
+            )
         }
         return AccountLoginResponseDto().apply {
-            this.accessToken = cryptoService.signJwt(account.id)
+            this.accessToken = jwtProvider.signToken(account)
         }
     }
 
     fun verifyAccessToken(accessToken: String) : AccountResponseDto {
-        val account: Account
         try {
-            val accountId = this.cryptoService.verifyJwt(accessToken.replace("Bearer ", ""))
-            account = this.accountService.getAccountById(accountId)
+            val account = this.jwtProvider.verifyToken(accessToken.replace("Bearer ", ""))
             return AccountResponseDto().apply {
                 this.id = account.id
                 this.username = account.username
@@ -52,14 +68,11 @@ class AuthService {
                     }
                 }
             }
+        } catch (err : FakebookException) {
+            throw err
         } catch (err : Exception) {
-            if (err is UnauthorizedException) {
-                throw UnauthorizedException("Invalid access token")
-            } else {
-                println(err)
-            }
+            throw FakebookException(LoginErrorReport("Invalid token", mapOf("token" to accessToken)))
         }
-        throw UnauthorizedException("Invalid access token")
     }
 
     @Value("\${google.clientId}")
@@ -88,14 +101,14 @@ class AuthService {
                     }
                 })
                 return AccountLoginResponseDto().apply {
-                    this.accessToken = cryptoService.signJwt(newAccount.id)
+                    this.accessToken = jwtProvider.signToken(newAccount)
                 }
             }
             return AccountLoginResponseDto().apply {
-                this.accessToken = cryptoService.signJwt(account.id)
+                this.accessToken = jwtProvider.signToken(account)
             }
         } else {
-            throw UnauthorizedException("Invalid credential")
+            throw FakebookException(LoginErrorReport("Invalid google credential", mapOf("credential" to credential)))
         }
     }
 }

@@ -1,19 +1,15 @@
 package tranlong5252.fakebookapi.service
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
-import com.google.api.client.http.javanet.NetHttpTransport
-import com.google.api.client.json.gson.GsonFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import tranlong5252.fakebookapi.db.AccountRepository
 import tranlong5252.fakebookapi.dto.accounts.AccountDetailDto
 import tranlong5252.fakebookapi.dto.accounts.AccountResponseDto
 import tranlong5252.fakebookapi.dto.accounts.CreateAccountDto
-import tranlong5252.fakebookapi.dto.auth.AccountLoginResponseDto
-import tranlong5252.fakebookapi.exception.NotFoundException
-import tranlong5252.fakebookapi.exception.UnauthorizedException
-import tranlong5252.fakebookapi.exception.ValidationError
+import tranlong5252.fakebookapi.exception.FakebookException
+import tranlong5252.fakebookapi.exception.entity.ValidationError
+import tranlong5252.fakebookapi.exception.errors.EntityNotFoundErrorReport
+import tranlong5252.fakebookapi.exception.errors.ValidationErrorReport
 import tranlong5252.fakebookapi.model.Account
 import tranlong5252.fakebookapi.model.AccountDetail
 import tranlong5252.fakebookapi.module.CryptoService
@@ -39,14 +35,16 @@ class AccountService {
         )
 
         if (results.isNotEmpty() && results[0]) {
-            val error = ValidationError()
-            error.property = "username"
-            error.constraints = mapOf("isUnique" to "Username already existed!")
+            val error = ValidationError(
+                "username",
+                mapOf("isUnique" to "Username already existed!"),
+                "Username already existed!"
+            )
             errors.add(error)
         }
 
         if (errors.isNotEmpty()) {
-            throw errors[0]
+            throw FakebookException(ValidationErrorReport(errors))
         }
 
         val account = this.repository.save(Account().apply {
@@ -73,11 +71,9 @@ class AccountService {
         }
     }
 
-    fun getAccountById(id: String): Account {
-        return  this.repository.findById(id).get() ?: throw NotFoundException("Account not found")
-    }
+    fun getAccountById(id: String) = this.repository.findById(id).get()
 
-    fun getAccountByUsername(username: String): Account {
-        return this.repository.getAccountByUsername(username) ?: throw NotFoundException("Account not found")
+    fun getAccountByUsername(username: String): Account? {
+        return this.repository.getAccountByUsername(username)
     }
 }
