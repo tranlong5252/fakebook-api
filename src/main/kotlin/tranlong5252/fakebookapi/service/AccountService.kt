@@ -1,8 +1,12 @@
 package tranlong5252.fakebookapi.service
 
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import tranlong5252.fakebookapi.db.AccountRepository
+import tranlong5252.fakebookapi.dto.GetManyResponse
+import tranlong5252.fakebookapi.dto.PageRequestDto
 import tranlong5252.fakebookapi.dto.accounts.AccountDetailDto
 import tranlong5252.fakebookapi.dto.accounts.AccountResponseDto
 import tranlong5252.fakebookapi.dto.accounts.CreateAccountDto
@@ -75,5 +79,46 @@ class AccountService {
 
     fun getAccountByUsername(username: String): Account? {
         return this.repository.getAccountByUsername(username)
+    }
+
+    fun updateDetail(id: String, detailDto: AccountDetailDto): AccountResponseDto? {
+        val account = this.repository.findById(id)
+        if (account.isEmpty) {
+            throw FakebookException(EntityNotFoundErrorReport("id", id))
+        }
+        val entity = account.get()
+        entity.detail = detailDto.toEntity()
+        this.repository.save(entity)
+        return AccountResponseDto().apply {
+            this.id = entity.id
+            this.username = entity.username
+            this.detail = AccountDetailDto().apply {
+                this.email = entity.detail!!.email
+                this.fname = entity.detail!!.fname
+                this.lname = entity.detail!!.lname
+                this.age = entity.detail!!.age
+            }
+        }
+    }
+
+    fun getAccounts(request: HttpServletRequest, page: PageRequestDto): GetManyResponse<AccountResponseDto> {
+        val pageRequest = PageRequest.of(page.page, page.take)
+        val accounts = this.repository.findAll(pageRequest)
+        val records = this.repository.count()
+        val totalPage = records / page.take
+        val nextPage = if (page.page < totalPage) page.page + 1 else page.page
+        val data = accounts.map {
+            AccountResponseDto().apply {
+                this.id = it.id
+                this.username = it.username
+                this.detail = AccountDetailDto().apply {
+                    this.email = it.detail!!.email
+                    this.fname = it.detail!!.fname
+                    this.lname = it.detail!!.lname
+                    this.age = it.detail!!.age
+                }
+            }
+        }
+        return GetManyResponse(page.page, page.take, data.toList(), records.toInt(), totalPage.toInt(), nextPage)
     }
 }

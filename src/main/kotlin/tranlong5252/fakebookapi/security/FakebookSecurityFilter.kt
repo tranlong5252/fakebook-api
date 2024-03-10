@@ -44,6 +44,7 @@ class FakebookSecurityFilter : OncePerRequestFilter() {
         try {
             filterChain.doFilter(request, response)
         } catch (e: Exception) {
+            val writer = response.writer
             response.status = HttpStatus.INTERNAL_SERVER_ERROR.value()
             var error = mapOf(
                 "message" to e.message,
@@ -55,10 +56,10 @@ class FakebookSecurityFilter : OncePerRequestFilter() {
                     "message" to cause.report.message,
                     "stackTrace" to e.stackTrace
                 )
-                response.writer.write(convertObjectToJson(error))
+                writer.write(convertObjectToJson(error))
                 return
             }
-            response.writer.write(convertObjectToJson(error))
+            //writer.write(convertObjectToJson(error))
             throw e
 
         }

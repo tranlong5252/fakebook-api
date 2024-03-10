@@ -68,8 +68,6 @@ class AuthService {
                     }
                 }
             }
-        } catch (err : FakebookException) {
-            throw err
         } catch (err : Exception) {
             throw FakebookException(LoginErrorReport("Invalid token", mapOf("token" to accessToken)))
         }

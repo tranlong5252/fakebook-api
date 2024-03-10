@@ -1,11 +1,13 @@
 package tranlong5252.fakebookapi.utils.enums
 
-enum class AccountRoleEnum(value: String) {
+enum class AccountRoleEnum(val value: String) {
 
     ADMIN("admin"),
     USER("user");
 
-    private val value = value
-
-    fun getValue() = value
+    companion object {
+        fun fromValue(value: String): AccountRoleEnum {
+            return entries.first { it.value == value }
+        }
+    }
 }

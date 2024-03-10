@@ -7,8 +7,6 @@ class AccountResponseDto : DtoBase<Account> {
     lateinit var id: String
     lateinit var username: String
 
-    //var role: Role
-
     var detail: AccountDetailDto? = null
 
     override fun toEntity(): Account {
