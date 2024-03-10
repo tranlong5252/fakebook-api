@@ -2,22 +2,19 @@ package tranlong5252.fakebookapi.security
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.security.access.hierarchicalroles.RoleHierarchy
-import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.web.SecurityFilterChain
-import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.security.web.access.intercept.AuthorizationFilter
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
+import tranlong5252.fakebookapi.utils.enums.AccountRole
 
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)
 class FakebookSecurityConfiguration {
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
@@ -37,13 +34,27 @@ class FakebookSecurityConfiguration {
             .csrf {
                 it.disable()
             }
-            .cors { it.configurationSource(corsConfigurationSource()) }
-            .authorizeHttpRequests {
-                it
-                    .anyRequest()
-                    .permitAll()
+            .cors {
+                it.configurationSource(corsConfigurationSource())
             }
-            .addFilterBefore(authenticationTokenFilterBean(), UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(authenticationTokenFilterBean(), AuthorizationFilter::class.java)
+            .authorizeHttpRequests { requests ->
+                requests
+                    .requestMatchers(HttpMethod.GET, "/**")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/accounts/**")
+                    .hasAuthority(AccountRole.ADMIN.value)
+                    .requestMatchers(HttpMethod.PUT, "/accounts/**")
+                    .hasAnyAuthority(AccountRole.ADMIN.value, AccountRole.USER.value)
+                    .requestMatchers(HttpMethod.GET, "/dashboard/**")
+                    .hasAuthority(AccountRole.ADMIN.value)
+
+            }
+            .headers {
+                it.frameOptions { frame ->
+                    frame.disable()
+                }
+            }
 
         return http.build()
     }
@@ -54,18 +65,4 @@ class FakebookSecurityConfiguration {
         return FakebookSecurityFilter()
     }
 
-    @Bean
-    fun customWebSecurityExpressionHandler(): DefaultWebSecurityExpressionHandler {
-        val expressionHandler = DefaultWebSecurityExpressionHandler()
-        expressionHandler.setRoleHierarchy(roleHierarchy())
-        return expressionHandler
-    }
-
-    @Bean
-    fun roleHierarchy(): RoleHierarchy {
-        val roleHierarchy = RoleHierarchyImpl()
-        val hierarchy = "ADMIN > USER"
-        roleHierarchy.setHierarchy(hierarchy)
-        return roleHierarchy
-    }
 }

@@ -6,7 +6,6 @@ import com.auth0.jwt.interfaces.DecodedJWT
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
-import org.springframework.stereotype.Service
 import tranlong5252.fakebookapi.exception.FakebookException
 import tranlong5252.fakebookapi.exception.errors.EntityNotFoundErrorReport
 import tranlong5252.fakebookapi.exception.errors.JwtErrorReport

@@ -6,6 +6,7 @@ class GetManyResponse<T>(
     val data: List<T>,
     val totalRecords: Int,
     val totalPage: Int,
-    val nextPage: Int
+    val nextPage: Int?,
+    val prevPage: Int?
 )
 

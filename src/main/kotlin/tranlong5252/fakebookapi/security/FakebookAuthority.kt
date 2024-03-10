@@ -1,17 +1,13 @@
 package tranlong5252.fakebookapi.security
 
 import org.springframework.security.core.GrantedAuthority
-import tranlong5252.fakebookapi.utils.enums.AccountRoleEnum
+import tranlong5252.fakebookapi.utils.enums.AccountRole
 
-class FakebookAuthority private constructor(authority: String) : GrantedAuthority {
+class FakebookAuthority private constructor(private val authority: String) : GrantedAuthority {
     companion object {
-        fun of(role: AccountRoleEnum) = FakebookAuthority(role.value)
+        fun of(role: AccountRole) = FakebookAuthority(role.value)
     }
 
-    private var authority: String? = authority
-
-    override fun getAuthority(): String {
-        return authority!!
-    }
+    override fun getAuthority() = authority
 
 }

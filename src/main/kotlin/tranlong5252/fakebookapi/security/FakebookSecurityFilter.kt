@@ -12,6 +12,7 @@ import org.springframework.web.filter.OncePerRequestFilter
 import tranlong5252.fakebookapi.exception.FakebookException
 import tranlong5252.fakebookapi.exception.errors.EntityNotFoundErrorReport
 import tranlong5252.fakebookapi.model.Account
+import java.io.Serializable
 
 
 class FakebookSecurityFilter : OncePerRequestFilter() {
@@ -30,7 +31,6 @@ class FakebookSecurityFilter : OncePerRequestFilter() {
         return token
     }
 
-
     override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain) {
         val context = SecurityContextHolder.getContext()
         var account : Account? = null
@@ -46,17 +46,14 @@ class FakebookSecurityFilter : OncePerRequestFilter() {
         } catch (e: Exception) {
             val writer = response.writer
             response.status = HttpStatus.INTERNAL_SERVER_ERROR.value()
-            var error = mapOf(
-                "message" to e.message,
-                "stackTrace" to e.stackTrace
-            )
+            val error: Map<String, Serializable?>
             val cause = e.cause
             if (cause is FakebookException && cause.report !is EntityNotFoundErrorReport) {
                 error = mapOf(
                     "message" to cause.report.message,
                     "stackTrace" to e.stackTrace
                 )
-                writer.write(convertObjectToJson(error))
+                convertObjectToJson(error)?.let { writer.write(it) }
                 return
             }
             //writer.write(convertObjectToJson(error))

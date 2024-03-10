@@ -1,13 +1,11 @@
 package tranlong5252.fakebookapi.security
 import org.springframework.security.core.Authentication
-import org.springframework.security.core.GrantedAuthority
 import tranlong5252.fakebookapi.model.Account
+import tranlong5252.fakebookapi.utils.enums.AccountRole
 
 class FakebookAuthentication(private val account: Account?) : Authentication {
 
-    override fun getAuthorities(): Collection<GrantedAuthority> {
-        return if (account != null) listOf(FakebookAuthority.of(account.role)) else listOf()
-    }
+    override fun getAuthorities() = if (account != null) listOf(FakebookAuthority.of(AccountRole.fromOrdinal(account.role))) else listOf()
 
     override fun getCredentials() = null
 

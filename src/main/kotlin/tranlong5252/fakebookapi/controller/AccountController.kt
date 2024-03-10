@@ -1,6 +1,7 @@
 package tranlong5252.fakebookapi.controller
 
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.validation.Valid
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -30,18 +31,15 @@ class AccountController {
 
     //return all accounts
     @GetMapping("/")
-    fun getAccounts(request: HttpServletRequest, @RequestBody page: PageRequestDto): ResponseEntity<GetManyResponse<AccountResponseDto>> {
-        val header = request.getHeader("Authorization")
-        val account = authService.verifyAccessToken(header)
-
+    fun getAccounts(request: HttpServletRequest, @Valid page: PageRequestDto): ResponseEntity<GetManyResponse<AccountResponseDto>> {
         val response = accountService.getAccounts(request, page)
         return ResponseEntity.ok().body(response)
     }
 
     @PutMapping("/detail")
     fun updateDetail(request: HttpServletRequest, @RequestBody detailDto: AccountDetailDto): ResponseEntity<AccountResponseDto> {
-        val userAgent = request.getHeader("Authorization")
-        val account = authService.verifyAccessToken(userAgent)
+        val header = request.getHeader("Authorization")
+        val account = authService.verifyAccessToken(header)
         val response = accountService.updateDetail(account.id, detailDto)
         return ResponseEntity.ok().body(response)
     }

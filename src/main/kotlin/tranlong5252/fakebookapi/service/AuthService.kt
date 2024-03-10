@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.RequestParam
-import tranlong5252.fakebookapi.dto.accounts.AccountDetailDto
 import tranlong5252.fakebookapi.dto.accounts.AccountResponseDto
 import tranlong5252.fakebookapi.dto.auth.AccountLoginResponseDto
 import tranlong5252.fakebookapi.dto.auth.LoginWithUsernameAndPasswordDto
@@ -17,6 +16,7 @@ import tranlong5252.fakebookapi.model.Account
 import tranlong5252.fakebookapi.model.AccountDetail
 import tranlong5252.fakebookapi.module.CryptoService
 import tranlong5252.fakebookapi.security.JwtProvider
+import tranlong5252.fakebookapi.utils.accountResponse
 import java.util.*
 
 @Service
@@ -31,7 +31,7 @@ class AuthService {
     private lateinit var accountService: AccountService
 
     fun loginWithUsernameAndPassword(dto: LoginWithUsernameAndPasswordDto): AccountLoginResponseDto {
-        val account = accountService.getAccountByUsername(dto.username)?: throw FakebookException(
+        val account = accountService.repository.getAccountByUsername(dto.username)?: throw FakebookException(
             LoginErrorReport(
                 "Account not found", mapOf(
                     "username" to dto.username
@@ -56,18 +56,7 @@ class AuthService {
     fun verifyAccessToken(accessToken: String) : AccountResponseDto {
         try {
             val account = this.jwtProvider.verifyToken(accessToken.replace("Bearer ", ""))
-            return AccountResponseDto().apply {
-                this.id = account.id
-                this.username = account.username
-                this.detail = account.detail?.let {
-                    AccountDetailDto().apply {
-                        this.email = it.email
-                        this.fname = it.fname
-                        this.lname = it.lname
-                        this.age = it.age
-                    }
-                }
-            }
+            return accountResponse(account)
         } catch (err : Exception) {
             throw FakebookException(LoginErrorReport("Invalid token", mapOf("token" to accessToken)))
         }
@@ -90,6 +79,7 @@ class AuthService {
                 val newAccount = this.accountService.repository.save(Account().apply {
                     this.id = UUID.randomUUID().toString()
                     this.username = email
+                    this.password = ""
                     this.email = email
                     this.detail = AccountDetail().apply {
                         this.email = email

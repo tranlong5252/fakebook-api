@@ -1,7 +1,7 @@
 package tranlong5252.fakebookapi.model
 
 import jakarta.persistence.*
-import tranlong5252.fakebookapi.utils.enums.AccountRoleEnum
+import tranlong5252.fakebookapi.utils.enums.AccountRole
 
 @Entity
 @Table(name = "accounts", uniqueConstraints = [
@@ -23,5 +23,5 @@ class Account {
     var detail: AccountDetail? = null
 
     @Column(nullable = false, name = "role")
-    var role: AccountRoleEnum = AccountRoleEnum.USER
+    var role: Int = AccountRole.USER.ordinal
 }
