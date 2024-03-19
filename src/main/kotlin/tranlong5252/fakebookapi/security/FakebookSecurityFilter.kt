@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.filter.OncePerRequestFilter
 import tranlong5252.fakebookapi.exception.FakebookException
 import tranlong5252.fakebookapi.exception.errors.EntityNotFoundErrorReport
+import tranlong5252.fakebookapi.exception.errors.ValidationErrorReport
 import tranlong5252.fakebookapi.model.Account
 import java.io.Serializable
 
@@ -48,15 +49,34 @@ class FakebookSecurityFilter : OncePerRequestFilter() {
             response.status = HttpStatus.INTERNAL_SERVER_ERROR.value()
             val error: Map<String, Serializable?>
             val cause = e.cause
-            if (cause is FakebookException && cause.report !is EntityNotFoundErrorReport) {
-                error = mapOf(
-                    "message" to cause.report.message,
-                    "stackTrace" to e.stackTrace
-                )
+            if (cause is FakebookException) {
+                when(val report = cause.report) {
+                    is ValidationErrorReport -> {
+                        val data = report.data
+                        val dataStr = data.joinToString {
+                            "${it.message}:\n\t${it.field}: ${it.value}\n"
+                        }
+
+                        error = mapOf(
+                            "message" to report.message,
+                            "data" to dataStr,
+                        )
+                    }
+                    is EntityNotFoundErrorReport -> {
+                        error = mapOf(
+                            "message" to report.message
+                        )
+                    }
+                    else -> {
+                        error = mapOf(
+                            "message" to report.message,
+                            "stackTrace" to e.stackTrace
+                        )
+                    }
+                }
                 convertObjectToJson(error)?.let { writer.write(it) }
                 return
             }
-            //writer.write(convertObjectToJson(error))
             throw e
 
         }
