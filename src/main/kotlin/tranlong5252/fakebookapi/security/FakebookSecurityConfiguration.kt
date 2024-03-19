@@ -40,16 +40,22 @@ class FakebookSecurityConfiguration {
             .addFilterBefore(authenticationTokenFilterBean(), AuthorizationFilter::class.java)
             .authorizeHttpRequests { requests ->
                 requests
-                    .requestMatchers(HttpMethod.GET, "/**")
+                    .requestMatchers(HttpMethod.GET, "/**", "/local-files/**")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.POST, "/local-files/**", "auth/**")
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, "/auth/**")
                     .permitAll()
-                    .requestMatchers(HttpMethod.GET, "/accounts/**")
+
+                    .requestMatchers(HttpMethod.GET, "/accounts/**", "/dashboard/**")
                     .hasAuthority(AccountRole.ADMIN.value)
-                    .requestMatchers(HttpMethod.PUT, "/accounts/**")
+                    .requestMatchers(HttpMethod.PUT, "/accounts/**", "/posts/**")
                     .hasAnyAuthority(AccountRole.ADMIN.value, AccountRole.USER.value)
-                    .requestMatchers(HttpMethod.GET, "/dashboard/**")
-                    .hasAuthority(AccountRole.ADMIN.value)
+
+                    .requestMatchers(HttpMethod.POST, "/posts/**")
+                    .hasAnyAuthority(AccountRole.ADMIN.value, AccountRole.USER.value)
+                    .requestMatchers(HttpMethod.GET, "/posts/**")
+                    .hasAnyAuthority(AccountRole.ADMIN.value, AccountRole.USER.value)
 
             }
             .headers {
