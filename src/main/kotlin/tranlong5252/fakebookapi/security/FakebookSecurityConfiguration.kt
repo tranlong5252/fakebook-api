@@ -44,8 +44,6 @@ class FakebookSecurityConfiguration {
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, "/local-files/**", "auth/**")
                     .permitAll()
-                    .requestMatchers(HttpMethod.POST, "/auth/**")
-                    .permitAll()
 
                     .requestMatchers(HttpMethod.GET, "/accounts/**", "/dashboard/**")
                     .hasAuthority(AccountRole.ADMIN.value)

@@ -16,4 +16,6 @@ class AccountDetail {
     var age: Int = 0
     @Column(name = "email")
     var email: String = ""
+    @Column(name = "avatar")
+    var avatar: String? = null
 }
