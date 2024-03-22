@@ -78,7 +78,7 @@ class AuthService {
             if (account == null) {
                 val newAccount = this.accountService.repository.save(Account().apply {
                     this.id = UUID.randomUUID().toString()
-                    this.username = email
+                    this.username = email.substring(0, email.indexOf("@"))
                     this.password = ""
                     this.email = email
                     this.detail = AccountDetail().apply {
