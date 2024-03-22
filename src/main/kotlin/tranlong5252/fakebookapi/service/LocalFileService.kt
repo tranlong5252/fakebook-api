@@ -9,6 +9,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 import tranlong5252.fakebookapi.db.LocalFileRepository
 import tranlong5252.fakebookapi.dto.localfiles.LocalFileDto
 import tranlong5252.fakebookapi.dto.localfiles.LocalFileUrlDto
+import tranlong5252.fakebookapi.exception.FakebookException
+import tranlong5252.fakebookapi.exception.errors.ErrorReport
 import tranlong5252.fakebookapi.model.LocalFile
 import tranlong5252.fakebookapi.utils.dateToString
 import java.io.BufferedInputStream
@@ -32,8 +34,8 @@ class LocalFileService {
             dir.mkdir()
         }
         val date = dateToString(Date())
-        val fileName = file.originalFilename ?: "file_$date"
-        val localFilePath = "$uploadFolder/${fileName}_$date"
+        val fileName = file.originalFilename ?: "${date}_file"
+        val localFilePath = "$uploadFolder/${date}_${fileName}"
         val f = File(localFilePath)
         if (!f.exists()) {
             f.createNewFile()
@@ -50,7 +52,10 @@ class LocalFileService {
         }
     }
 
-    fun getFileInfo(id: String) = File(repository.findById(id).orElseThrow { Exception("File not found!") }.diskPath)
+    fun getFileInfo(id: String) : File? {
+        val localFile = repository.findById(id).orElse(null) ?: return null
+        return File(localFile.diskPath)
+    }
 
     private fun createLocalFile(name: String, path: String): LocalFile {
         val entity = LocalFile().apply {

@@ -64,7 +64,9 @@ class FakebookSecurityFilter : OncePerRequestFilter() {
                     }
                     is EntityNotFoundErrorReport -> {
                         error = mapOf(
-                            "message" to report.message
+                            "message" to report.message,
+                            "field" to report.data["field"],
+                            "value" to report.data["value"]
                         )
                     }
                     else -> {
