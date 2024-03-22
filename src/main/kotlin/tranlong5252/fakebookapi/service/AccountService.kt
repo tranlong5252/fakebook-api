@@ -29,8 +29,25 @@ class AccountService {
     @Autowired
     lateinit var repository: AccountRepository
 
+    fun validateDetail(dto: AccountDetailDto, accountId: String? = null): List<ValidationError> {
+        val errors = mutableListOf<ValidationError>()
+
+        val results = listOf(
+            this.repository.findAll().map { it }.any { it.detail!!.email == dto.email && it.id != accountId }
+                .or(this.repository.findAll().map { it }.any { it.id != accountId && it.detail!!.email == dto.email }
+        ))
+
+        if (results.isNotEmpty() && results[0]) {
+            val error = ValidationError.of("email", "isUnique", "Email already existed!")
+            errors.add(error)
+        }
+
+        return errors
+    }
+
     fun createAccount(dto: CreateAccountDto) : AccountResponseDto {
         val errors = mutableListOf<ValidationError>()
+        errors.addAll(this.validateDetail(dto.detail!!))
 
         val results = listOf(
             this.repository.findAll().map { it }.any { it.username == dto.username }
@@ -50,7 +67,6 @@ class AccountService {
         }
         val account = this.repository.save(
             newAccount(
-                UUID.randomUUID().toString(),
                 dto.username,
                 cryptoService.crypto(dto.password),
                 dto.detail!!.toEntity()
@@ -64,6 +80,11 @@ class AccountService {
         if (optional.isEmpty) {
             throw FakebookException(EntityNotFoundErrorReport("id", id))
         }
+        val errors = this.validateDetail(detailDto, id)
+        if (errors.isNotEmpty()) {
+            throw FakebookException(ValidationErrorReport(errors))
+        }
+
         val account = optional.get()
         account.detail = detailDto.toEntity()
         this.repository.save(account)
@@ -81,6 +102,6 @@ class AccountService {
         val data = accounts.map {
             accountResponse(it)
         }
-        return GetManyResponse(page, dto.take, data.toList(), records.toInt(), totalPage.toInt(), nextPage , prevPage)
+        return GetManyResponse(page, dto.take, data.toList(), records.toInt(), totalPage, nextPage , prevPage)
     }
 }

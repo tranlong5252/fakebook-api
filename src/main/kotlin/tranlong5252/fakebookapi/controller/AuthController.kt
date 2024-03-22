@@ -12,7 +12,7 @@ import tranlong5252.fakebookapi.service.AuthService
 
 @RestController
 @RequestMapping("/auth")
-internal class AuthController {
+class AuthController {
     @Autowired
     private lateinit var authService: AuthService
 
